@@ -1,0 +1,28 @@
+/* src/styles.scss */
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$primary: mat.define-palette(mat.$blue-palette, 700);
+$accent: mat.define-palette(mat.$orange-palette, 600);
+$warn: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (primary: $primary, accent: $accent, warn: $warn),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($theme);
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #fafafa;
+}
+
+h1, h2, h3 { margin-top: 0; }
+
+.mat-mdc-card { border-radius: 8px !important; }
