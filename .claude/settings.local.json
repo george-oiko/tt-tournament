@@ -7,7 +7,8 @@
       "Bash(node --version)",
       "Bash(npm --version)",
       "Bash(npx ng update @angular/core@18 @angular/cli@18 --force)",
-      "Bash(git stash)"
+      "Bash(git stash)",
+      "Bash(npx ng build)"
     ]
   }
 }

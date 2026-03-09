@@ -6,3 +6,23 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
+
+<IfModule mod_headers.c>
+  # Prevent MIME-type sniffing
+  Header set X-Content-Type-Options "nosniff"
+
+  # Block clickjacking
+  Header set X-Frame-Options "SAMEORIGIN"
+
+  # Force HTTPS for 1 year (enable once you have SSL)
+  # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Control referrer information
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Restrict browser features
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+  # Basic Content Security Policy
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;"
+</IfModule>

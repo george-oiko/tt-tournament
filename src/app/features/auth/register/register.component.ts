@@ -1,7 +1,7 @@
 // src/app/features/auth/register/register.component.ts
 import { Component, inject } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { AbstractControl, FormBuilder, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +10,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
+
+const passwordsMatch: ValidatorFn = (group: AbstractControl) => {
+  const pw = group.get('password')?.value;
+  const confirm = group.get('confirmPassword')?.value;
+  return pw === confirm ? null : { passwordMismatch: true };
+};
 
 @Component({
   selector: 'app-register',
@@ -41,8 +47,24 @@ import { AuthService } from '../../../core/auth/auth.service';
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Password</mat-label>
-              <input matInput type="password" formControlName="password" />
+              <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" />
+              <button mat-icon-button matSuffix type="button" (click)="showPassword = !showPassword">
+                <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (form.get('password')?.errors?.['minlength']) {
+                <mat-error>At least 8 characters required.</mat-error>
+              }
+              @if (form.get('password')?.errors?.['pattern']) {
+                <mat-error>Must include uppercase, number, and special character.</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword" />
               <mat-icon matSuffix>lock</mat-icon>
+              @if (form.errors?.['passwordMismatch'] && form.get('confirmPassword')?.dirty) {
+                <mat-error>Passwords do not match.</mat-error>
+              }
             </mat-form-field>
             @if (error) { <p class="error-msg">{{ error }}</p> }
             @if (success) { <p class="success-msg">Account created! Check your email to confirm.</p> }
@@ -70,17 +92,22 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
-  private router = inject(Router);
+
+  showPassword = false;
+  loading = false;
+  error = '';
+  success = false;
 
   form = this.fb.group({
     fullName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-  });
-
-  loading = false;
-  error = '';
-  success = false;
+    password: ['', [
+      Validators.required,
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*\-_]).{8,}$/),
+    ]],
+    confirmPassword: ['', Validators.required],
+  }, { validators: passwordsMatch });
 
   async submit() {
     if (this.form.invalid) return;
@@ -93,8 +120,8 @@ export class RegisterComponent {
         this.form.value.fullName!,
       );
       this.success = true;
-    } catch (e: any) {
-      this.error = e.message ?? 'Registration failed';
+    } catch {
+      this.error = 'Registration failed. Please try again.';
     } finally {
       this.loading = false;
     }
