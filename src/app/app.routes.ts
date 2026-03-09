@@ -46,8 +46,8 @@ export const routes: Routes = [
               { path: 'players', loadComponent: () => import('./features/players/player-list/player-list.component').then(m => m.PlayerListComponent) },
               { path: 'groups', loadComponent: () => import('./features/groups/group-view/group-view.component').then(m => m.GroupViewComponent) },
               { path: 'bracket', loadComponent: () => import('./features/bracket/bracket-view/bracket-view.component').then(m => m.BracketViewComponent) },
+              { path: 'consolation', loadComponent: () => import('./features/bracket/consolation-view/consolation-view.component').then(m => m.ConsolationViewComponent) },
               // { path: 'matches', loadComponent: () => import('./features/matches/match-list/match-list.component').then(m => m.MatchListComponent) },
-              { path: '', redirectTo: 'players', pathMatch: 'full' },
             ],
           },
           {

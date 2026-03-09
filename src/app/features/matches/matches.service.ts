@@ -75,11 +75,10 @@ export class MatchesService {
       else if (s.score_p2 > s.score_p1) setsP2++;
     }
 
-    const setsToWin = Math.ceil(event.sets_to_win / 2) + (event.sets_to_win % 2 === 0 ? 0 : 0);
     const requiredToWin = Math.ceil(event.sets_to_win / 2 + 0.5); // e.g. best of 5 → 3 to win
-    const winnerId = setsP1 >= requiredToWin
+    const winnerId = setsP1 >= requiredToWin && setsP1 > setsP2
       ? match.player1_id
-      : setsP2 >= requiredToWin
+      : setsP2 >= requiredToWin && setsP2 > setsP1
         ? match.player2_id
         : null;
 

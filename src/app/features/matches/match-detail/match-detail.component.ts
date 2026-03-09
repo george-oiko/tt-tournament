@@ -35,6 +35,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 
         <mat-card class="players-card">
           <mat-card-content>
+            <div class="table-scroll">
             <table class="result-table">
               <thead>
                 <tr>
@@ -85,6 +86,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                 </tr>
               </tbody>
             </table>
+            </div>
           </mat-card-content>
         </mat-card>
 
@@ -96,6 +98,7 @@ import { AuthService } from '../../../core/auth/auth.service';
             </mat-card-header>
             <mat-card-content>
               <form [formGroup]="form" (ngSubmit)="submitScore()">
+                <div class="table-scroll">
                 <table class="score-entry-table">
                   <thead>
                     <tr>
@@ -128,6 +131,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                     </tr>
                   </tbody>
                 </table>
+                </div>
                 <div class="form-actions">
                   <button mat-button type="button" (click)="addSet()"><mat-icon>add</mat-icon> Add Set</button>
                   <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading()">
@@ -146,6 +150,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   `,
   styles: [`
     .match-detail { max-width: 700px; }
+    .table-scroll { overflow-x: auto; }
     .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
     .page-header h1 { margin: 0; flex: 1; }
     .result-table { width: 100%; border-collapse: collapse; }
@@ -154,7 +159,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     .player-col { text-align: left; min-width: 160px; }
     .set-col { width: 70px; }
     .total-col { width: 90px; }
-    .player-name-cell { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+    .player-name-cell { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 400; }
+    .row-winner .player-name-cell { font-weight: 700; }
     .seed-badge { font-size: 11px; color: #1976d2; background: #e3f2fd; padding: 2px 6px; border-radius: 10px; font-weight: 500; }
     .score-cell { text-align: center; font-size: 15px; }
     .score-cell.set-win { color: #2e7d32; font-weight: 700; }
@@ -175,6 +181,14 @@ import { AuthService } from '../../../core/auth/auth.service';
     .status-pending { background: #fff3e0 !important; }
     .status-completed { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .status-in_progress { background: #e3f2fd !important; color: #1565c0 !important; }
+
+    @media (max-width: 600px) {
+      .match-detail { max-width: 100%; }
+      .page-header { margin-bottom: 16px; }
+      .page-header h1 { font-size: 18px; }
+      .player-col { min-width: 110px; }
+      .score-field { width: 60px; }
+    }
   `],
 })
 export class MatchDetailComponent implements OnInit {

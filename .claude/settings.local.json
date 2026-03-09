@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(powershell.exe -NoProfile -NonInteractive -Command \"\n$lines = [System.IO.File]::ReadAllLines\\(''c:\\\\myProjects\\\\tt-tournament\\\\.gitignore''\\);\n$lines | Select-Object -Last 10\n\")",
-      "Bash(powershell.exe -NoProfile:*)"
+      "Bash(powershell.exe -NoProfile:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

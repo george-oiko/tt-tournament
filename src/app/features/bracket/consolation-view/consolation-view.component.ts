@@ -1,4 +1,4 @@
-// src/app/features/bracket/bracket-view/bracket-view.component.ts
+// src/app/features/bracket/consolation-view/consolation-view.component.ts
 import { Component, inject, OnInit, signal, Input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +9,7 @@ import { MatchesService } from '../../matches/matches.service';
 import { Match } from '../../../core/models';
 
 @Component({
-  selector: 'app-bracket-view',
+  selector: 'app-consolation-view',
   standalone: true,
   imports: [CommonModule, RouterLink, MatCardModule, MatIconModule, MatButtonModule],
   template: `
@@ -17,12 +17,12 @@ import { Match } from '../../../core/models';
       @if (rounds().length === 0) {
         <mat-card>
           <mat-card-content class="empty">
-            <mat-icon>account_tree</mat-icon>
-            <p>Knockout bracket not generated yet.</p>
+            <mat-icon>device_hub</mat-icon>
+            <p>Consolation bracket not generated yet.</p>
           </mat-card-content>
         </mat-card>
       } @else {
-        <div class="bracket-wrapper" id="printable-bracket">
+        <div class="bracket-wrapper">
           <div class="bracket">
             @for (round of rounds(); track round.round; let ri = $index) {
               <div class="round">
@@ -50,11 +50,6 @@ import { Match } from '../../../core/models';
             }
           </div>
         </div>
-        <div class="print-btn">
-          <button mat-stroked-button (click)="print()">
-            <mat-icon>print</mat-icon> Print Bracket
-          </button>
-        </div>
       }
     </div>
   `,
@@ -63,37 +58,31 @@ import { Match } from '../../../core/models';
     .bracket-wrapper { padding: 16px 0; }
     .bracket { display: flex; gap: 0; align-items: flex-start; }
     .round { display: flex; flex-direction: column; align-items: center; min-width: 200px; }
-    .round-label { font-weight: 700; color: #1976d2; margin-bottom: 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .round-label { font-weight: 700; color: #7b1fa2; margin-bottom: 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
     .matches { display: flex; flex-direction: column; width: 100%; padding: 0 8px; }
     .match-slot { display: flex; align-items: center; width: 100%; }
-    .bracket-match { width: 100%; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; cursor: pointer; transition: box-shadow 0.15s; background: white; }
+    .bracket-match { width: 100%; border: 1px solid #ce93d8; border-radius: 6px; overflow: hidden; cursor: pointer; transition: box-shadow 0.15s; background: white; }
     .bracket-match:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-    .bracket-match.completed { border-color: #4caf50; }
+    .bracket-match.completed { border-color: #7b1fa2; }
     .bracket-player { display: flex; align-items: center; gap: 6px; padding: 6px 8px; font-size: 13px; }
-    .bracket-player.winner { background: #e8f5e9; font-weight: 700; color: #2e7d32; }
+    .bracket-player.winner { background: #f3e5f5; font-weight: 700; color: #6a1b9a; }
     .bracket-player.loser { color: #999; }
     .bracket-divider { height: 1px; background: #eee; }
-    .seed { background: #e3f2fd; color: #1565c0; border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 600; min-width: 22px; text-align: center; }
+    .seed { background: #f3e5f5; color: #6a1b9a; border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 600; min-width: 22px; text-align: center; }
     .name { flex: 1; }
     .sets { font-weight: 700; min-width: 16px; text-align: right; }
     .empty { text-align: center; padding: 48px !important; }
     .empty mat-icon { font-size: 48px; width: 48px; height: 48px; color: #ccc; }
-    .print-btn { margin-top: 16px; }
-
-    @media print {
-      .print-btn, button { display: none !important; }
-      .bracket { font-size: 11px; }
-    }
   `],
 })
-export class BracketViewComponent implements OnInit {
+export class ConsolationViewComponent implements OnInit {
   @Input() id!: string;
 
   private matchesService = inject(MatchesService);
   rounds = signal<{ round: number; matches: Match[] }[]>([]);
 
   async ngOnInit() {
-    const matches = await this.matchesService.getKnockoutByEvent(this.id);
+    const matches = await this.matchesService.getConsolationByEvent(this.id);
     this.rounds.set(this.buildRounds(matches));
   }
 
@@ -123,9 +112,5 @@ export class BracketViewComponent implements OnInit {
   setsWon(match: Match, player: 'p1' | 'p2'): number | string {
     if (!match.sets || match.sets.length === 0) return '';
     return match.sets.filter(s => player === 'p1' ? s.score_p1 > s.score_p2 : s.score_p2 > s.score_p1).length;
-  }
-
-  print() {
-    window.print();
   }
 }

@@ -1,12 +1,15 @@
 // src/app/shared/components/shell/shell.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -20,25 +23,28 @@ import { CommonModule } from '@angular/common';
   ],
   template: `
     <mat-sidenav-container class="sidenav-container">
-      <mat-sidenav mode="side" opened class="sidenav">
+      <mat-sidenav #sidenav
+        [mode]="isMobile() ? 'over' : 'side'"
+        [opened]="!isMobile()"
+        class="sidenav">
         <div class="sidenav-header">
           <mat-icon class="logo-icon">sports_tennis</mat-icon>
           <span class="logo-text">TT Tournament</span>
         </div>
         <mat-divider />
         <mat-nav-list>
-          <a mat-list-item routerLink="/events" routerLinkActive="active-link">
+          <a mat-list-item routerLink="/events" routerLinkActive="active-link" (click)="closeOnMobile()">
             <mat-icon matListItemIcon>event</mat-icon>
             <span matListItemTitle>Events</span>
           </a>
           @if (auth.isLoggedIn()) {
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+            <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" (click)="closeOnMobile()">
               <mat-icon matListItemIcon>dashboard</mat-icon>
               <span matListItemTitle>Dashboard</span>
             </a>
             @if (auth.isAdmin()) {
               <mat-divider />
-              <a mat-list-item routerLink="/admin" routerLinkActive="active-link">
+              <a mat-list-item routerLink="/admin" routerLinkActive="active-link" (click)="closeOnMobile()">
                 <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
                 <span matListItemTitle>Admin</span>
               </a>
@@ -59,7 +65,7 @@ import { CommonModule } from '@angular/common';
               <mat-icon>logout</mat-icon> Sign Out
             </button>
           } @else {
-            <a mat-button routerLink="/auth/login" class="sign-in-btn">
+            <a mat-button routerLink="/auth/login" class="sign-in-btn" (click)="closeOnMobile()">
               <mat-icon>login</mat-icon> Sign In
             </a>
           }
@@ -67,7 +73,12 @@ import { CommonModule } from '@angular/common';
       </mat-sidenav>
       <mat-sidenav-content>
         <mat-toolbar color="primary">
-          <span>Table Tennis Tournament Platform</span>
+          @if (isMobile()) {
+            <button mat-icon-button (click)="sidenav.toggle()" class="menu-btn">
+              <mat-icon>menu</mat-icon>
+            </button>
+          }
+          <span class="toolbar-title">{{ isMobile() ? 'TT Tournament' : 'Table Tennis Tournament Platform' }}</span>
         </mat-toolbar>
         <div class="content">
           <router-outlet />
@@ -89,10 +100,30 @@ import { CommonModule } from '@angular/common';
     .user-role { font-size: 11px; color: #666; }
     .sign-out-btn { width: 100%; margin-top: 4px; }
     .sign-in-btn { width: 100%; margin-top: 4px; }
-    .content { padding: 24px; }
+    .menu-btn { margin-right: 4px; }
+    .toolbar-title { font-size: 16px; }
     mat-toolbar { position: sticky; top: 0; z-index: 100; }
+    .content { padding: 24px; }
+
+    @media (max-width: 600px) {
+      .content { padding: 12px; }
+    }
   `],
 })
 export class ShellComponent {
+  @ViewChild('sidenav') sidenav!: MatSidenav;
+
   auth = inject(AuthService);
+  private breakpointObserver = inject(BreakpointObserver);
+
+  isMobile = toSignal(
+    this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(r => r.matches)),
+    { initialValue: false }
+  );
+
+  closeOnMobile() {
+    if (this.isMobile()) {
+      this.sidenav.close();
+    }
+  }
 }

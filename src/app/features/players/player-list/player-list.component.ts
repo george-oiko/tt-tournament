@@ -73,10 +73,6 @@ import { AuthService } from '../../../core/auth/auth.service';
                 <span class="ranking-badge">{{ p.ranking }}</span>
               </td>
             </ng-container>
-            <ng-container matColumnDef="email">
-              <th mat-header-cell *matHeaderCellDef>Email</th>
-              <td mat-cell *matCellDef="let p">{{ p.email ?? '—' }}</td>
-            </ng-container>
             @if (auth.isLoggedIn()) {
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef></th>
@@ -129,8 +125,8 @@ export class PlayerListComponent implements OnInit {
 
   get columns() {
     return this.auth.isLoggedIn()
-      ? ['drag', 'seed', 'name', 'ranking', 'email', 'actions']
-      : ['seed', 'name', 'ranking', 'email'];
+      ? ['drag', 'seed', 'name', 'ranking', 'actions']
+      : ['seed', 'name', 'ranking'];
   }
 
   async ngOnInit() {

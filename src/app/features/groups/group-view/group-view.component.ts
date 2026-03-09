@@ -81,7 +81,9 @@ import { Group, GroupStanding, Match } from '../../../core/models';
                     <mat-card-content>
                       @for (match of getGroupMatches(group.id); track match.id) {
                         <div class="match-row" [class.completed]="match.status === 'completed'" [routerLink]="['/matches', match.id]">
-                          <span class="player" [class.winner]="match.winner_id === match.player1_id">
+                          <span class="player"
+                            [class.winner]="match.winner_id === match.player1_id"
+                            [class.loser]="match.winner_id && match.winner_id !== match.player1_id">
                             {{ match.player1?.name ?? 'TBD' }}
                           </span>
                           <span class="score">
@@ -91,7 +93,9 @@ import { Group, GroupStanding, Match } from '../../../core/models';
                               vs
                             }
                           </span>
-                          <span class="player right" [class.winner]="match.winner_id === match.player2_id">
+                          <span class="player right"
+                            [class.winner]="match.winner_id === match.player2_id"
+                            [class.loser]="match.winner_id && match.winner_id !== match.player2_id">
                             {{ match.player2?.name ?? 'TBD' }}
                           </span>
                           <mat-icon class="match-status-icon" [class.done]="match.status === 'completed'">
@@ -112,15 +116,20 @@ import { Group, GroupStanding, Match } from '../../../core/models';
   styles: [`
     .group-content { padding: 24px 0; }
     .group-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) {
+      .group-columns { grid-template-columns: 1fr; }
+      .group-content { padding: 16px 0; }
+    }
     .empty { text-align: center; padding: 48px !important; }
     .empty mat-icon { font-size: 48px; width: 48px; height: 48px; color: #ccc; }
     .points-badge { background: #1976d2; color: white; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
     .match-row { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; transition: background 0.15s; }
     .match-row:hover { background: #f5f5f5; }
     .match-row.completed { background: #f9f9f9; }
-    .player { flex: 1; font-size: 14px; }
+    .player { flex: 1; font-size: 14px; font-weight: 400; }
     .player.right { text-align: right; }
     .player.winner { font-weight: 700; color: #2e7d32; }
+    .player.loser { opacity: 0.6; }
     .score { font-weight: 700; padding: 0 8px; min-width: 48px; text-align: center; }
     .match-status-icon { font-size: 18px; width: 18px; height: 18px; color: #ccc; }
     .match-status-icon.done { color: #4caf50; }

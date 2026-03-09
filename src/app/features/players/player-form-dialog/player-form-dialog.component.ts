@@ -32,15 +32,16 @@ interface DialogData { eventId: string; player?: Player; }
           <mat-label>Club (optional)</mat-label>
           <input matInput formControlName="club" />
         </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email (optional)</mat-label>
-          <input matInput type="email" formControlName="email" />
-        </mat-form-field>
         @if (error) { <p class="error">{{ error }}</p> }
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
+      @if (!data.player) {
+        <button mat-stroked-button color="primary" [disabled]="form.invalid || loading" (click)="saveAndAdd()">
+          {{ loading ? 'Saving...' : 'Save & Add' }}
+        </button>
+      }
       <button mat-raised-button color="primary" form="playerForm" type="submit" [disabled]="form.invalid || loading">
         {{ loading ? 'Saving...' : 'Save' }}
       </button>
@@ -58,7 +59,6 @@ export class PlayerFormDialogComponent {
     name: [this.data.player?.name ?? '', Validators.required],
     ranking: [this.data.player?.ranking ?? null, [Validators.min(1)]],
     club: [this.data.player?.club ?? ''],
-    email: [this.data.player?.email ?? '', Validators.email],
   });
 
   loading = false;
@@ -76,6 +76,21 @@ export class PlayerFormDialogComponent {
         await this.playersService.create(dto);
       }
       this.ref.close(true);
+    } catch (e: any) {
+      this.error = e.message ?? 'Failed to save player';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async saveAndAdd() {
+    if (this.form.invalid) return;
+    this.loading = true;
+    this.error = '';
+    try {
+      const dto = { ...this.form.value, event_id: this.data.eventId } as any;
+      await this.playersService.create(dto);
+      this.form.reset();
     } catch (e: any) {
       this.error = e.message ?? 'Failed to save player';
     } finally {

@@ -1,6 +1,6 @@
 // src/app/features/events/event-detail/event-detail.component.ts
 import { Component, inject, OnInit, signal, Input } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -82,6 +82,11 @@ import { AuthService } from '../../../core/auth/auth.service';
               <mat-icon>account_tree</mat-icon> Knockout
             </a>
           }
+          @if (event()!.has_consolation) {
+            <a mat-tab-link routerLink="consolation" routerLinkActive #rla5="routerLinkActive" [active]="rla5.isActive">
+              <mat-icon>device_hub</mat-icon> Consolation
+            </a>
+          }
           <a mat-tab-link routerLink="players" routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
             <mat-icon>people</mat-icon> Players
           </a>
@@ -103,15 +108,20 @@ import { AuthService } from '../../../core/auth/auth.service';
   styles: [`
     .event-detail { max-width: 1100px; }
     .event-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
-    .event-title { flex: 1; }
-    .event-title h1 { margin: 0 0 8px; }
-    .event-meta { display: flex; gap: 8px; }
-    .event-actions { margin-top: 8px; }
+    .event-title { flex: 1; min-width: 0; }
+    .event-title h1 { margin: 0 0 8px; word-break: break-word; }
+    .event-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .event-actions { margin-top: 8px; flex-shrink: 0; }
     .status-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .status-draft { background: #fff3e0 !important; color: #e65100 !important; }
     .status-completed { background: #e3f2fd !important; color: #1565c0 !important; }
-    .tab-content { padding-top: 24px; }
+    .tab-content { padding-top: 16px; }
     mat-icon { margin-right: 6px; vertical-align: middle; font-size: 18px; height: 18px; width: 18px; }
+
+    @media (max-width: 600px) {
+      .event-title h1 { font-size: 18px; }
+      .event-header { gap: 8px; margin-bottom: 16px; }
+    }
   `],
 })
 export class EventDetailComponent implements OnInit {
@@ -124,11 +134,35 @@ export class EventDetailComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   event = signal<TournamentEvent | null>(null);
 
   async ngOnInit() {
     await this.loadEvent();
+    if (!this.route.firstChild) {
+      await this.navigateToDefaultTab();
+    }
+  }
+
+  async navigateToDefaultTab() {
+    const event = this.event()!;
+    if (event.status === 'draft') {
+      this.router.navigate(['players'], { relativeTo: this.route });
+      return;
+    }
+    const type = event.type;
+    if (type === 'groups') {
+      this.router.navigate(['groups'], { relativeTo: this.route });
+      return;
+    }
+    if (type === 'knockout') {
+      this.router.navigate(['bracket'], { relativeTo: this.route });
+      return;
+    }
+    // groups_knockout: go to bracket if knockout is generated, otherwise groups
+    const knockoutMatches = await this.matchesService.getKnockoutByEvent(this.id);
+    this.router.navigate([knockoutMatches.length > 0 ? 'bracket' : 'groups'], { relativeTo: this.route });
   }
 
   async loadEvent() {
@@ -240,7 +274,7 @@ export class EventDetailComponent implements OnInit {
 
       await this.matchesService.generateConsolationBracket(this.id, consolationPlayers);
       this.snackBar.open('Consolation bracket generated!', 'OK', { duration: 3000 });
-      this.router.navigate(['/events', this.id, 'bracket']);
+      this.router.navigate(['/events', this.id, 'consolation']);
     } catch (e: any) {
       this.snackBar.open(e.message, 'OK', { duration: 4000 });
     }
