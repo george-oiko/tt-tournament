@@ -26,6 +26,7 @@ export interface TournamentEvent {
   points_per_loss: number;
   points_per_no_show: number;
   has_consolation: boolean;
+  event_date?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -118,6 +119,7 @@ export interface CreateEventDto {
   points_per_loss: number;
   points_per_no_show: number;
   has_consolation: boolean;
+  event_date?: string;
 }
 
 export interface CreatePlayerDto {

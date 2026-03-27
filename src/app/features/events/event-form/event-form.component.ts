@@ -11,6 +11,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { EventsService } from '../events.service';
 
@@ -21,6 +23,7 @@ import { EventsService } from '../events.service';
     CommonModule, ReactiveFormsModule, RouterLink,
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatSelectModule, MatDividerModule, MatCheckboxModule,
+    MatDatepickerModule, MatNativeDateModule,
   ],
   template: `
     <div class="form-container">
@@ -40,6 +43,12 @@ import { EventsService } from '../events.service';
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Description</mat-label>
               <textarea matInput formControlName="description" rows="3"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Event Date (optional)</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="event_date" />
+              <mat-datepicker-toggle matIconSuffix [for]="picker" />
+              <mat-datepicker #picker />
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Event Type</mat-label>
@@ -140,6 +149,7 @@ export class EventFormComponent implements OnInit {
     points_per_loss: [1, Validators.required],
     points_per_no_show: [0, Validators.required],
     has_consolation: [false],
+    event_date: [null as Date | null],
   });
 
   private eventType = toSignal(this.form.get('type')!.valueChanges, { initialValue: this.form.value.type ?? null });
@@ -148,7 +158,10 @@ export class EventFormComponent implements OnInit {
   async ngOnInit() {
     if (this.id) {
       const event = await this.eventsService.getById(this.id);
-      this.form.patchValue(event as any);
+      this.form.patchValue({
+        ...event as any,
+        event_date: event.event_date ? new Date(event.event_date) : null,
+      });
     }
   }
 
@@ -157,7 +170,11 @@ export class EventFormComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
     try {
-      const dto = this.form.value as any;
+      const raw = this.form.value;
+      const dto: any = {
+        ...raw,
+        event_date: raw.event_date ? (raw.event_date as Date).toISOString().split('T')[0] : null,
+      };
       if (this.id) {
         await this.eventsService.update(this.id, dto);
         this.router.navigate(['/events', this.id]);

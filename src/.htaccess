@@ -14,8 +14,8 @@
   # Block clickjacking
   Header set X-Frame-Options "SAMEORIGIN"
 
-  # Force HTTPS for 1 year (enable once you have SSL)
-  # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # Force HTTPS for 1 year
+  Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
   # Control referrer information
   Header set Referrer-Policy "strict-origin-when-cross-origin"
