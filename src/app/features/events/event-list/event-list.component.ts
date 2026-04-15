@@ -54,7 +54,11 @@ import { AuthService } from '../../../core/auth/auth.service';
                 <mat-card-header>
                   <mat-icon mat-card-avatar>{{ typeIcon(event.type) }}</mat-icon>
                   <mat-card-title>{{ event.name }}</mat-card-title>
-                  <mat-card-subtitle>{{ event.type | titlecase }}</mat-card-subtitle>
+                  <mat-card-subtitle>
+                    @if (event.event_date) {
+                      {{ formatDate(event.event_date) }}
+                    }
+                  </mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
                   @if (event.description) {
@@ -106,6 +110,12 @@ export class EventListComponent implements OnInit {
 
   async ngOnInit() {
     this.allEvents.set(await this.eventsService.getAll());
+  }
+
+  formatDate(dateStr: string) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
+             .replace(/\//g, '/');
   }
 
   typeIcon(type: string) {
