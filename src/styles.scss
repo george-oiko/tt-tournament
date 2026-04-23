@@ -26,3 +26,21 @@ body {
 h1, h2, h3 { margin-top: 0; }
 
 .mat-mdc-card { border-radius: 8px !important; }
+
+/* Group tabs — distinct amber underline to differentiate from event nav tabs */
+.group-tabs {
+  .mdc-tab-indicator__content--underline {
+    border-color: #f57c00 !important;
+  }
+  .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+    color: #f57c00 !important;
+  }
+}
+
+/* Tab nav bar — wrap to next line instead of scrolling or paginating */
+.mat-mdc-tab-link-container {
+  overflow: visible !important;
+}
+.mat-mdc-tab-links {
+  flex-wrap: wrap !important;
+}

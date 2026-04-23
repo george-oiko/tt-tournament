@@ -14,6 +14,7 @@ import { PlayersService } from '../../players/players.service';
 import { MatchesService } from '../../matches/matches.service';
 import { TournamentEvent } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { EventTypeLabelPipe } from '../../../shared/pipes/event-type-label.pipe';
 
 @Component({
   selector: 'app-event-detail',
@@ -21,6 +22,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   imports: [
     CommonModule, RouterLink, RouterLinkActive, RouterOutlet,
     MatTabsModule, MatButtonModule, MatIconModule, MatChipsModule, MatMenuModule, MatSnackBarModule,
+    EventTypeLabelPipe,
   ],
   template: `
     @if (event()) {
@@ -30,7 +32,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           <div class="event-title">
             <h1>{{ event()!.name }}</h1>
             <div class="event-meta">
-              <mat-chip class="type-chip">{{ event()!.type | titlecase }}</mat-chip>
+              <mat-chip class="type-chip">{{ event()!.type | eventTypeLabel }}</mat-chip>
               <mat-chip [class]="'status-' + event()!.status">{{ event()!.status | titlecase }}</mat-chip>
             </div>
           </div>
@@ -71,7 +73,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           </div>
         </div>
 
-        <nav mat-tab-nav-bar [tabPanel]="tabPanel">
+        <nav mat-tab-nav-bar [tabPanel]="tabPanel" >
           @if (showGroups()) {
             <a mat-tab-link routerLink="groups" routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive">
               <mat-icon>group_work</mat-icon> Groups
@@ -122,6 +124,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       .event-title h1 { font-size: 18px; }
       .event-header { gap: 8px; margin-bottom: 16px; }
     }
+
   `],
 })
 export class EventDetailComponent implements OnInit {

@@ -26,7 +26,7 @@ import { Group, GroupStanding, Match } from '../../../core/models';
           </mat-card-content>
         </mat-card>
       } @else {
-        <mat-tab-group>
+        <mat-tab-group class="group-tabs">
           @for (group of groups(); track group.id) {
             <mat-tab [label]="group.name">
               <div class="group-content">

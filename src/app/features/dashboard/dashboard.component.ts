@@ -9,11 +9,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventsService } from '../events/events.service';
 import { TournamentEvent } from '../../core/models';
+import { EventTypeLabelPipe } from '../../shared/pipes/event-type-label.pipe';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, EventTypeLabelPipe],
   template: `
     <div class="dashboard">
       <div class="welcome">
@@ -79,7 +80,7 @@ import { TournamentEvent } from '../../core/models';
               <mat-card-header>
                 <mat-icon mat-card-avatar>{{ typeIcon(event.type) }}</mat-icon>
                 <mat-card-title>{{ event.name }}</mat-card-title>
-                <mat-card-subtitle>{{ event.type | titlecase }}</mat-card-subtitle>
+                <mat-card-subtitle>{{ event.type | eventTypeLabel }}</mat-card-subtitle>
               </mat-card-header>
               <mat-card-content>
                 <mat-chip [class]="'status-' + event.status">{{ event.status | titlecase }}</mat-chip>
