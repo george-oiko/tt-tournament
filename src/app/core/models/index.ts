@@ -3,7 +3,7 @@
 export type UserRole = 'admin' | 'event_manager' | 'viewer';
 export type EventType = 'groups' | 'knockout' | 'groups_knockout';
 export type EventStatus = 'draft' | 'active' | 'completed';
-export type MatchStage = 'group' | 'knockout' | 'consolation';
+export type MatchStage = 'group' | 'knockout' | 'consolation' | 'knockout_plate' | 'consolation_plate';
 export type MatchStatus = 'pending' | 'in_progress' | 'completed' | 'walkover';
 
 export interface Profile {

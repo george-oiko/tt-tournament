@@ -164,6 +164,84 @@ export class GroupsService {
     });
   }
 
+  /**
+   * Assign a newly created player to the group with the fewest members,
+   * then generate the new round-robin matches (new player vs every existing member).
+   * Returns the name of the group they were added to.
+   */
+  async addPlayerToSmallestGroup(eventId: string, newPlayer: Player): Promise<string> {
+    // Fetch groups
+    const { data: groups, error: gErr } = await this.sb
+      .from('groups')
+      .select('id, name')
+      .eq('event_id', eventId)
+      .order('name');
+    if (gErr) throw gErr;
+    if (!groups || groups.length === 0) return '';
+
+    // Fetch player IDs per group directly (avoids join key mismatch)
+    const { data: allGroupPlayers, error: gpFetchErr } = await this.sb
+      .from('group_players')
+      .select('group_id, player_id')
+      .in('group_id', groups.map(g => g.id));
+    if (gpFetchErr) throw gpFetchErr;
+
+    const playersByGroup = new Map<string, string[]>();
+    for (const g of groups) playersByGroup.set(g.id, []);
+    for (const gp of (allGroupPlayers ?? [])) {
+      playersByGroup.get(gp.group_id)?.push(gp.player_id);
+    }
+
+    // Find group with fewest members (first group wins ties)
+    let smallestGroup = groups[0];
+    let smallestCount = playersByGroup.get(groups[0].id)!.length;
+    for (const g of groups) {
+      const count = playersByGroup.get(g.id)!.length;
+      if (count < smallestCount) {
+        smallestCount = count;
+        smallestGroup = g;
+      }
+    }
+
+    const existingPlayerIds = playersByGroup.get(smallestGroup.id)!;
+
+    // Add player to group
+    const { error: gpErr } = await this.sb.from('group_players').insert({
+      group_id: smallestGroup.id,
+      player_id: newPlayer.id,
+      seed_in_group: existingPlayerIds.length + 1,
+    });
+    if (gpErr) throw gpErr;
+
+    // Generate new matches: new player vs each existing group member
+    if (existingPlayerIds.length > 0) {
+      const { data: lastMatch } = await this.sb
+        .from('matches')
+        .select('match_number')
+        .eq('group_id', smallestGroup.id)
+        .order('match_number', { ascending: false })
+        .limit(1);
+
+      let matchNumber = (lastMatch?.[0]?.match_number ?? 0) + 1;
+
+      const newMatches = existingPlayerIds.map(pid => ({
+        event_id: eventId,
+        group_id: smallestGroup.id,
+        stage: 'group',
+        round: 1,
+        match_number: matchNumber++,
+        player1_id: pid,
+        player2_id: newPlayer.id,
+        status: 'pending',
+      }));
+
+      const { error: mErr } = await this.sb.from('matches').insert(newMatches);
+      if (mErr) throw mErr;
+    }
+
+    return smallestGroup.name;
+  }
+
   /** Generate all round-robin matches for a group */
   private async generateRoundRobinMatches(eventId: string, groupId: string, players: Player[]) {
     const matches = [];

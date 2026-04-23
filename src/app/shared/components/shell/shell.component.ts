@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
     MatIconModule, MatButtonModule, MatDividerModule,
   ],
   template: `
-    <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav-container class="sidenav-container" autosize>
       <mat-sidenav #sidenav
         [mode]="isMobile() ? 'over' : 'side'"
         [opened]="!isMobile()">

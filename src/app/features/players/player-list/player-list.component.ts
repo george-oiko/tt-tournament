@@ -16,6 +16,7 @@ import { Player } from '../../../core/models';
 import { PlayerFormDialogComponent } from '../player-form-dialog/player-form-dialog.component';
 import { PlayerResultsDialogComponent } from '../player-results-dialog/player-results-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { GroupsService } from '../../groups/groups.service';
 
 @Component({
   selector: 'app-player-list',
@@ -117,6 +118,7 @@ export class PlayerListComponent implements OnInit {
   @Input() id!: string; // event id
 
   private playersService = inject(PlayersService);
+  private groupsService = inject(GroupsService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   auth = inject(AuthService);
@@ -162,8 +164,21 @@ export class PlayerListComponent implements OnInit {
       width: '400px',
       data: { eventId: this.id },
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.load();
+    ref.afterClosed().subscribe(async (result: Player | true | undefined) => {
+      if (!result) return;
+      if (typeof result === 'object') {
+        // Newly created player — assign to group if groups exist
+        try {
+          const groups = await this.groupsService.getByEvent(this.id);
+          if (groups.length > 0) {
+            const groupName = await this.groupsService.addPlayerToSmallestGroup(this.id, result);
+            this.snackBar.open(`${result.name} added to ${groupName}`, 'OK', { duration: 3000 });
+          }
+        } catch (e: any) {
+          this.snackBar.open(e.message ?? 'Failed to assign player to group', 'OK', { duration: 4000 });
+        }
+      }
+      await this.load();
     });
   }
 

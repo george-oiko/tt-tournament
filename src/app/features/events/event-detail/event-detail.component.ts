@@ -87,7 +87,7 @@ import { AuthService } from '../../../core/auth/auth.service';
               <mat-icon>device_hub</mat-icon> Consolation
             </a>
           }
-          <a mat-tab-link routerLink="players" routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
+<a mat-tab-link routerLink="players" routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">
             <mat-icon>people</mat-icon> Players
           </a>
           
@@ -216,12 +216,16 @@ export class EventDetailComponent implements OnInit {
       const groupMatches = allMatches.filter(m => m.stage === 'group');
       const sorted = this.groupsService.sortStandingsWithTiebreak(standings, groupMatches);
       const event = this.event()!;
-      // Get top N per group using tiebreak-sorted standings
+      // Build advancing players tier-by-tier so bracket seeding works correctly:
+      // all 1st places first, then all 2nd places, etc.
+      // This makes seed 1 (best 1st place) face seed N (worst 2nd place) in R1.
       const groupIds = [...new Set(sorted.map(s => s.group_id))];
-      const advancingPlayers: { id: string }[] = [];
-      for (const gid of groupIds) {
-        const groupStandings = sorted.filter(s => s.group_id === gid).slice(0, event.groups_advance);
-        advancingPlayers.push(...groupStandings.map(s => ({ id: s.player_id })));
+      const advancingPlayers: { id: string; group_id: string }[] = [];
+      for (let pos = 0; pos < event.groups_advance; pos++) {
+        for (const gid of groupIds) {
+          const s = sorted.filter(x => x.group_id === gid)[pos];
+          if (s) advancingPlayers.push({ id: s.player_id, group_id: gid });
+        }
       }
       await this.matchesService.generateKnockoutBracket(this.id, advancingPlayers);
       this.snackBar.open('Knockout bracket generated!', 'OK', { duration: 3000 });
@@ -262,10 +266,24 @@ export class EventDetailComponent implements OnInit {
           .forEach(s => qualifyingIds.add(s.player_id));
       }
 
-      // Non-qualifiers sorted by group position then points (better performers seeded higher)
-      const consolationPlayers = sorted
-        .filter(s => !qualifyingIds.has(s.player_id))
-        .map(s => ({ id: s.player_id }));
+      // Build consolation players tier-by-tier (3rd places, then 4th places, etc.)
+      // so seed 1 (best 3rd place) faces seed N (worst non-qualifier) in R1.
+      const nonQualsByGroup = new Map<string, { id: string; group_id: string }[]>();
+      for (const gid of groupIds) {
+        nonQualsByGroup.set(
+          gid,
+          sorted.filter(s => s.group_id === gid && !qualifyingIds.has(s.player_id))
+                .map(s => ({ id: s.player_id, group_id: gid }))
+        );
+      }
+      const maxTiers = Math.max(...Array.from(nonQualsByGroup.values()).map(a => a.length));
+      const consolationPlayers: { id: string; group_id: string }[] = [];
+      for (let tier = 0; tier < maxTiers; tier++) {
+        for (const gid of groupIds) {
+          const p = nonQualsByGroup.get(gid)?.[tier];
+          if (p) consolationPlayers.push(p);
+        }
+      }
 
       if (consolationPlayers.length < 2) {
         this.snackBar.open('Not enough non-qualifying players for a consolation bracket.', 'OK', { duration: 3000 });

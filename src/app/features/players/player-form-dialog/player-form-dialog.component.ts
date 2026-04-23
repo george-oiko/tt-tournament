@@ -26,7 +26,7 @@ interface DialogData { eventId: string; player?: Player; }
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Ranking (optional)</mat-label>
           <input matInput type="number" formControlName="ranking" min="1" />
-          <mat-hint>Leave blank to add at last position. Existing players shift down if slot is taken.</mat-hint>
+          <mat-hint>Leave blank to add at last position.</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Club (optional)</mat-label>
@@ -72,10 +72,11 @@ export class PlayerFormDialogComponent {
       const dto = { ...this.form.value, event_id: this.data.eventId } as any;
       if (this.data.player) {
         await this.playersService.update(this.data.player.id, dto);
+        this.ref.close(true);
       } else {
-        await this.playersService.create(dto);
+        const player = await this.playersService.create(dto);
+        this.ref.close(player);
       }
-      this.ref.close(true);
     } catch (e: any) {
       this.error = e.message ?? 'Failed to save player';
     } finally {

@@ -57,7 +57,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                       <mat-icon class="trophy">emoji_events</mat-icon>
                     }
                     {{ match()!.player1?.name ?? 'TBD' }}
-                    <span class="seed-badge">S{{ match()!.player1?.seed_position ?? '?' }}</span>
+                    <span class="seed-badge">R{{ match()!.player1?.seed_position ?? '?' }}</span>
                   </td>
                   @for (set of match()!.sets ?? []; track set.set_number) {
                     <td class="score-cell" [class.set-win]="set.score_p1 > set.score_p2">{{ set.score_p1 }}</td>
@@ -74,7 +74,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                       <mat-icon class="trophy">emoji_events</mat-icon>
                     }
                     {{ match()!.player2?.name ?? 'TBD' }}
-                    <span class="seed-badge">S{{ match()!.player2?.seed_position ?? '?' }}</span>
+                    <span class="seed-badge">R{{ match()!.player2?.seed_position ?? '?' }}</span>
                   </td>
                   @for (set of match()!.sets ?? []; track set.set_number) {
                     <td class="score-cell" [class.set-win]="set.score_p2 > set.score_p1">{{ set.score_p2 }}</td>
